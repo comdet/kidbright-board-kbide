@@ -1,11 +1,11 @@
 const codegen = require("./codegen");
-const mkdirp = require("mkdirp");
 const path = require("path");
 const fs = require("fs");
 const log = require("./log");
 
 var engine = Vue.prototype.$engine;
 var G = Vue.prototype.$global;
+const mkdirp = engine.util.requireFunc("mkdirp");
 
 const SerialPort = engine.util.requireFunc("serialport");
 const moment = engine.util.requireFunc("moment");
