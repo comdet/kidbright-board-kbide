@@ -40,6 +40,7 @@
   var path = `${engine.util.boardDir}/${G.board.board}/compiler`;
   var boardCompiler = engine.util.requireFunc(path);
   var comport = "";
+  const baudrate = 921600;
   export default {
     components: {
       VueQRCodeComponent,
@@ -57,7 +58,7 @@
         this.text = "Generate QR Code";
         boardCompiler.listPort().then(comp => {
           comport = comp[0];
-          return boardCompiler.readMac({portName: comport});
+          return boardCompiler.readMac({portName: comport, baudrate});
         }).then((boardMac) => {
           this.text = boardMac.mac;
           this.success = true;
