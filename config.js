@@ -6,7 +6,7 @@ module.exports = {
     author : 'NECTEC',
     email : 'comdet.p@gmail.com',
     website : 'http://www.kidbright.org',
-    git : 'https://gitlab.com/kidbright/kbide/',    
+    git : 'https://github.com/comdet/kidbright-board-kbide/',
     image : '/static/display.jpg',    
     version : '1.0.1'
 };
