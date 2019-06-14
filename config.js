@@ -8,5 +8,5 @@ module.exports = {
     website : 'http://www.kidbright.org',
     git : 'https://gitlab.com/kidbright/kbide/',    
     image : '/static/display.jpg',    
-    version : '1.0.0'
+    version : '1.0.1'
 };

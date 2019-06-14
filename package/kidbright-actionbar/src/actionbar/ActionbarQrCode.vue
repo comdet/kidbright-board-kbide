@@ -60,7 +60,7 @@
           comport = comp[0];
           return boardCompiler.readMac({portName: comport, baudrate});
         }).then((boardMac) => {
-          this.text = boardMac.mac;
+          this.text = boardMac.mac.split(":").join("-");
           this.success = true;
         }).catch(err => {
           this.success = false;
