@@ -222,7 +222,7 @@ module.exports = {
         );
       }
       plugins_includes_switch.push(
-        `-I"${pluginsInfo[obj_inst_tab[inst_index].dir].dir}"`
+        `${pluginsInfo[obj_inst_tab[inst_index].dir].dir}`
       );
     }
     return {
