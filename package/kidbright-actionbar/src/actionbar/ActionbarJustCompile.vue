@@ -76,7 +76,7 @@
   var comport = "";
   var mac = "";
   var boardName = "";
-
+  var mother = null;
   export default {
     data() {
       return {
@@ -100,7 +100,8 @@
       };
     },
 
-    mounted() {
+    created() {
+      mother = this;
     },
 
     beforeDestroy() {
@@ -108,18 +109,18 @@
     },
     methods: {
       rebuild() {
-        this.compileStep = 1;
-        this.failed = false;
-        this.stepResult["1"].result = true;
-        this.stepResult["2"].result = true;
-        this.stepResult["3"].result = true;
-        this.run();
+        mother.compileStep = 1;
+        mother.failed = false;
+        mother.stepResult["1"].result = true;
+        mother.stepResult["2"].result = true;
+        mother.stepResult["3"].result = true;
+        Vue.nextTick(mother.run);
       },
       run() { //find port and mac
         console.log("---> step 1 <---");
         G.$emit("compile-begin");
-        this.compileStep = 1;
-        this.stepResult["1"].msg = "Compiling..";
+        mother.compileStep = 1;
+        mother.stepResult["1"].msg = "Compiling..";
         //this.stepResult["1"].msg += ` at ${comport}`;
         const p = new Promise((resolve, rejecf) => {
           resolve({mac: "ff:ff:ff:ff:ff:ff"});
@@ -129,7 +130,7 @@
           mac = boardMac.mac;
           boardName = mac.replace(/:/g, "-");
           console.log(`[STEP 1] got it boardName = ${boardName} mac = ${mac}`);
-          this.compileStep = 2;
+          mother.compileStep = 2;
           console.log("---> step 2 <---");
 
           this.stepResult["2"].msg = "Compile board ... ";
@@ -142,34 +143,35 @@
           };
 
           let compileCb = (status) => {
-            this.stepResult["2"].msg = status;
+            mother.stepResult["2"].msg = status;
           };
           return boardCompiler.compile(rawCode, boardName, config, compileCb);
         }).then(() => {
-          this.stepResult["2"].msg += "done!";
-          this.compileStep = 3;
+          mother.stepResult["2"].msg += "done!";
+          mother.compileStep = 3;
           G.$emit("compile-success");
         }).catch(err => {
           console.log("------ process error ------");
           engine.util.compiler.parseError(err).then(errors => {
             console.error(`errors:`, errors);
             G.$emit("compile-error",errors);
-            if (this.compileStep == 1) {
-              this.stepResult["1"].msg = "Cannot find KidBright : " + err;
-              this.stepResult["1"].result = false;
-            } else if (this.compileStep == 2) {
-              this.stepResult["2"].msg = `${errors.join("\n")}`;
-              this.stepResult["2"].result = false;
-            } else if (this.compileStep == 3) {
-              this.stepResult["3"].msg = "Cannot upload program : " + err;
-              this.stepResult["3"].result = false;
+            if (mother.compileStep == 1) {
+              mother.stepResult["1"].msg = "Cannot find KidBright : " + err;
+              mother.stepResult["1"].result = false;
+            } else if (mother.compileStep == 2) {
+              mother.stepResult["2"].msg = `${errors.join("\n")}`;
+              mother.stepResult["2"].result = false;
+            } else if (mother.compileStep == 3) {
+              mother.stepResult["3"].msg = "Cannot upload program : " + err;
+              mother.stepResult["3"].result = false;
             }
+            mother.failed = true;
           }).catch(errors => {
             console.log("errors", errors);
             //G.$emit("compiler-error", errors);
-            this.failed = true;
+            mother.failed = true;
           });
-          this.failed = true;
+          mother.failed = true;
         });
       },
     },
