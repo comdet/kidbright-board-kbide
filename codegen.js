@@ -133,10 +133,12 @@ module.exports = {
     let plugins_sources = [];
     for(let inst_index in obj_inst_tab){
       let el = obj_inst_tab[inst_index];
-      let catInfo = pluginsInfo.categories.find(cat=> cat.dirName.toLowerCase() === el.dir.toLowerCase());
-      plugins_includes_code += catInfo.sourceFile.filter(el=>el.endsWith(".h") || el.endsWith(".hpp")).map(el=>`#include "${el}"`).join("\n");
-      plugins_sources.push(...catInfo.sourceFile.filter(el=>el.endsWith(".c") || el.endsWith(".cpp")).map(el=>`${catInfo.sourceIncludeDir}/${el}`));
-      plugins_includes_switch.push(catInfo.sourceIncludeDir);
+      let pluginKey = Object.keys(pluginsInfo.plugins).find(pl=>pl.toLowerCase() === el.dir.toLowerCase());
+      let catInfo = pluginsInfo.plugins[pluginKey];
+      let pluginFiles = fs.readdirSync(catInfo.dir);
+      plugins_includes_code += pluginFiles.filter(el=>el.endsWith(".h") || el.endsWith(".hpp")).map(el=>`#include "${el}"`).join("\n");
+      plugins_sources.push(...pluginFiles.filter(el=>el.endsWith(".c") || el.endsWith(".cpp")).map(el=>`${catInfo.dir}/${el}`));
+      plugins_includes_switch.push(catInfo.dir);
     }
     return {
       code: plugins_includes_code,
