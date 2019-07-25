@@ -1,93 +1,18 @@
 //---- setup dir ----//
-var engine = Vue.prototype.$engine;
-var G = Vue.prototype.$global;
+const engine = Vue.prototype.$engine;
+const G = Vue.prototype.$global;
 
 const fs = require("fs");
 const md5 = engine.util.requireFunc("md5");
 const log = require("./log");
 
-var boardDirectory = `${engine.util.boardDir}/${G.board.board}`;
-var platformDir = `${engine.util.platformDir}/${G.board.board_info.platform}`;
-var pluginDir = `${boardDirectory}/plugin`;
+const boardDirectory = `${engine.util.boardDir}/${G.board.board}`;
+const pluginDir = `${engine.util.pluginDir}`;
 //-------------------//
 
 const driver_type_arr = ["DEV_IO", "DEV_I2C0", "DEV_I2C1", "DEV_SPI"];
 
 module.exports = {
-  listPlugin: function(dir) {
-    let plugins = {};
-    let catPlugins = fs.readdirSync(dir);
-    if (catPlugins.length > 0) {
-      catPlugins.forEach(plugin => {
-        let fdir = `${dir}/${plugin}`;
-        if (fs.lstatSync(fdir).isDirectory()) {
-          // read source and include file
-          let srcs = [];
-          let incs = [];
-          let files = fs.readdirSync(fdir);
-          files.forEach(file => {
-            if (fs.lstatSync(`${fdir}/${file}`).isFile()) {
-              // source file (*.c, *.cpp)
-              if (
-                file.match(/\.c$/g) != null ||
-                file.match(/\.cpp$/g) != null
-              ) {
-                srcs.push(file);
-              }
-              // header file (*.h, *.hpp)
-              if (
-                file.match(/\.h$/g) != null ||
-                file.match(/\.hpp$/g) != null
-              ) {
-                incs.push(file);
-              }
-            }
-          });
-          // TODO : check block and generator must eq
-          plugins[plugin] = {
-            dir: fdir,
-            incs: incs,
-            srcs: srcs,
-            name: plugin
-          };
-          log.i(
-            `plugin "${plugin}" found ${incs.length} inc, ${
-              srcs.length
-            } src file(s)`
-          );
-        }
-      });
-    }
-    return plugins;
-  },
-
-  listCategoryPlugins: function() {
-    var categories = [];
-    var allPlugin = {};
-    var cats = fs.readdirSync(pluginDir);
-    cats.forEach(cat => {
-      var dir = `${pluginDir}/${cat}`;
-      var infoFile = `${dir}/${cat}.json`;
-
-      if (!fs.lstatSync(dir).isDirectory()) {
-        return;
-      }
-      if (!fs.existsSync(infoFile)) {
-        return;
-      }
-
-      var catInfoFile = JSON.parse(fs.readFileSync(infoFile));
-      var plugins = this.listPlugin(dir);
-      categories.push({
-        directory: cat,
-        plugins: plugins,
-        category: catInfoFile
-      });
-      Object.assign(allPlugin, plugins);
-    });
-    return { categories: categories, plugins: allPlugin };
-  },
-
   gen_iot_code: function(setup_code, current_setup_code) {
     let config_flag = false;
     let iot_config = [];
@@ -176,7 +101,6 @@ module.exports = {
             cls = cls_lst[0].replace("(", "");
           }
         }
-
         let obj_declare_index = 0;
         // check duplicate object instantiate
         let obj_inst_dup_flag = false;
@@ -207,23 +131,12 @@ module.exports = {
     let plugins_includes_code = "";
     let plugins_includes_switch = [];
     let plugins_sources = [];
-    for (let inst_index in obj_inst_tab) {
-      for (let i in pluginsInfo[obj_inst_tab[inst_index].dir].incs) {
-        plugins_includes_code +=
-          '#include "' +
-          pluginsInfo[obj_inst_tab[inst_index].dir].incs[i] +
-          '"\n';
-      }
-      for (let i in pluginsInfo[obj_inst_tab[inst_index].dir].srcs) {
-        plugins_sources.push(
-          pluginsInfo[obj_inst_tab[inst_index].dir].dir +
-            "/" +
-            pluginsInfo[obj_inst_tab[inst_index].dir].srcs[i]
-        );
-      }
-      plugins_includes_switch.push(
-        `${pluginsInfo[obj_inst_tab[inst_index].dir].dir}`
-      );
+    for(let inst_index in obj_inst_tab){
+      let el = obj_inst_tab[inst_index];
+      let catInfo = pluginsInfo.categories.find(cat=> cat.dirName.toLowerCase() === el.dir.toLowerCase());
+      plugins_includes_code += catInfo.sourceFile.filter(el=>el.endsWith(".h") || el.endsWith(".hpp")).map(el=>`#include "${el}"`).join("\n");
+      plugins_sources.push(...catInfo.sourceFile.filter(el=>el.endsWith(".c") || el.endsWith(".cpp")).map(el=>`${catInfo.sourceIncludeDir}/${el}`));
+      plugins_includes_switch.push(catInfo.sourceIncludeDir);
     }
     return {
       code: plugins_includes_code,
@@ -266,10 +179,9 @@ module.exports = {
   },
   codeGenerate: function(rawCode, template, config) {
     //--- list plugins dependency ---//
-    let categoriesInfo = this.listCategoryPlugins();
-    let plugins = categoriesInfo.plugins;
-
-    let codeContext = this.createCodeContext(rawCode, config, plugins);
+    //let categoriesInfo = this.listCategoryPlugins();
+    let categoriesInfo = G.plugin.pluginInfo;
+    let codeContext = this.createCodeContext(rawCode, config, categoriesInfo);
     const entries = Object.entries(codeContext);
     const result = entries.reduce((output, entry) => {
       const [key, value] = entry;
