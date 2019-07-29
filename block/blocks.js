@@ -186,7 +186,7 @@ var math_colour = Blockly.Msg.MATH_HUE;
 Blockly.Blocks["math_number"] = {
 	init: function() {
 		this.appendDummyInput()
-			.appendField(new Blockly.FieldNumber(0, -9999999, 9999999, 0.01), 'VALUE');
+			.appendField(new Blockly.FieldNumber(0, -9999999, 9999999, 0.01), 'NUM');
 		this.setOutput(true, 'Number');
 		this.setPreviousStatement(false);
 		this.setNextStatement(false);
