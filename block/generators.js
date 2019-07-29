@@ -73,7 +73,7 @@ Blockly.JavaScript['basic_string'] = function(block) {
 // =============================================================================
 Blockly.JavaScript['math_number'] = function(block) {
 	return [
-		'(double)' + block.getFieldValue('NUM'),
+		'(double)' + block.getFieldValue('VALUE'),
 		Blockly.JavaScript.ORDER_ATOMIC
 	];
 };
