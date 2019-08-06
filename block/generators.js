@@ -167,7 +167,7 @@ Blockly.JavaScript['logic_compare'] = function(block) {
 
 	var code = '';
 	// check string compare
-	if (block.childBlocks_[0].outputConnection.check_[0] == 'String') {
+	if (block.childBlocks_[0] && block.childBlocks_[0].outputConnection && block.childBlocks_[0].outputConnection.check_[0] && block.childBlocks_[0].outputConnection.check_[0] == 'String') {
 		code = 'strcmp(' + argument0 + ', ' + argument1 + ') ' + OPERATORS[block.getFieldValue('OP')] + ' 0';
 	}
 	else {
