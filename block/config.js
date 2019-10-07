@@ -1,6 +1,6 @@
 module.exports = {
     initial_blocks : '<xml xmlns="http://www.w3.org/1999/xhtml"><variables></variables></xml>',
-    base_blocks : [ // use "blocks : [ " in normally situation but this need to override base block from esp-idf platforms
+    blocks : [ // use "blocks : [ " in normally situation but this need to override base block from esp-idf platforms
         {
             name : 'Basic',
             color : '230',
